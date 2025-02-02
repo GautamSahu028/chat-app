@@ -3,7 +3,7 @@
 import Google from "@/components/Icons/Google";
 import Button from "@/components/ui/Button";
 import { signIn } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 
 const Page = () => {

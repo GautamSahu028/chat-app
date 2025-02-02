@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import React from "react";
+import LogoutButton from "@/components/LogoutButton";
 
 const Page = async () => {
   const session = await getServerSession(authOptions);
@@ -8,8 +9,7 @@ const Page = async () => {
   if (!session || !session.user) {
     return <p>No active session</p>;
   }
-
-  return <pre>{JSON.stringify(session)}</pre>;
+  return <div>{session ? <LogoutButton /> : "Please sign in!"}</div>;
 };
 
 export default Page;
