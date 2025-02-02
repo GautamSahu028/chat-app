@@ -1,7 +1,6 @@
 import { fetchRedis } from "@/helpers/redis";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { addFriendValidator } from "@/lib/validations/validateFriend";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 

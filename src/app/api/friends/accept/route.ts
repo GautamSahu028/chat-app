@@ -28,7 +28,6 @@ export async function POST(req: Request) {
       `user:${session.user.id}:incoming_friend_requests`,
       idToAdd
     );
-    console.log("hasFriendRequests : ", hasFriendRequests);
     if (!hasFriendRequests) {
       return new Response("No friend request", { status: 400 });
     }
@@ -41,18 +40,11 @@ export async function POST(req: Request) {
         idToAdd
       ),
     ]);
-    // console.log("session.user.id : ", session.user.id);
-    // console.log("idToAdd : ", idToAdd);
-    // await db.sadd(`user:${session.user.id}:friends`, idToAdd);
-    // await db.sadd(`user:${idToAdd}:friends`, session.user.id);
-    // await db.srem(`user:${session.user.id}:incoming_friend_requests`, idToAdd);
-
     return new Response("OK");
   } catch (error) {
     if (error instanceof z.ZodError) {
       return new Response("Invalid request payload", { status: 402 });
     }
-    // console.log("error : ", error);
     return new Response("Invalid request", { status: 400 });
   }
 }
