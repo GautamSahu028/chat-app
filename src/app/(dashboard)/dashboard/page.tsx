@@ -4,7 +4,7 @@ import React from "react";
 import LogoutButton from "@/components/LogoutButton";
 
 const Page = async () => {
-  return <div>hello</div>;
+  return <div>Dashboard</div>;
 };
 
 export default Page;
