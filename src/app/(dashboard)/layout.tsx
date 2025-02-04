@@ -8,6 +8,8 @@ import Image from "next/image";
 import LogoutButton from "@/components/LogoutButton";
 import FriendRequestSidebarOption from "@/components/FriendRequestSidebarOption";
 import { fetchRedis } from "@/helpers/redis";
+import { getFriendsByUserID } from "@/helpers/getFriendsByUserID";
+import SidebarChatList from "@/components/SidebarChatList";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -31,6 +33,8 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
   const session = await getServerSession(authOptions);
   if (!session) notFound();
 
+  const friends = await getFriendsByUserID(session.user.id);
+
   const unseenRequestCount = (
     (await fetchRedis(
       "smembers",
@@ -44,12 +48,16 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
         <Link href="/dashboard" className="flex h-16 shrink-0 items-center">
           <Icons.Logo className="h-8 w-auto text-indigo-600" />
         </Link>
-        <div className="text-xs font-semibold leading-6 text-gray-400">
-          Your Chats
-        </div>
+        {friends.length > 0 ? (
+          <div className="text-xs font-semibold leading-6 text-gray-400">
+            Your Chats
+          </div>
+        ) : null}
         <nav className="flex flex-1 flex-col">
           <ul role="list" className="flex flex-1 flex-col gap-y-7">
-            <li>// Chat this user</li>
+            <li>
+              <SidebarChatList friends={friends} sessionId={session.user.id} />
+            </li>
             <li>
               <div className="text-xs font-semibold leading-6 text-gray-400">
                 Overview
@@ -70,13 +78,12 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
                     </Link>
                   );
                 })}
+                <FriendRequestSidebarOption
+                  sessionId={session.user.id}
+                  initialUnseenRequestCount={unseenRequestCount}
+                />
               </ul>
             </li>
-
-            <FriendRequestSidebarOption
-              sessionId={session.user.id}
-              initialUnseenRequestCount={unseenRequestCount}
-            />
 
             <li className="-mx-6 mt-auto flex items-center">
               <div className="flex flex-1 items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900">
@@ -102,7 +109,7 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
           </ul>
         </nav>
       </div>
-      <div className="p-4">{children}</div>
+      {children}
     </div>
   );
 };
