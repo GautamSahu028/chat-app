@@ -1,4 +1,4 @@
-import { timeStamp } from "console";
+import { time, timeStamp } from "console";
 import z from "zod";
 
 export const messageValidator = z.object({
@@ -7,6 +7,7 @@ export const messageValidator = z.object({
   receiverId: z.string(),
   text: z.string(),
   timeStamp: z.number(),
+  time: z.string(),
 });
 
 export const messageArrayValidator = z.array(messageValidator);

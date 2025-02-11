@@ -23,7 +23,7 @@ async function getChatMessages(chatId: string) {
       -1
     );
     const dbMessages = results.map((msg) => JSON.parse(msg) as Message);
-    console.log("results : ", results);
+    // console.log("results : ", results);
     const revDbMessages = dbMessages.reverse();
     const messages = messageArrayValidator.safeParse(revDbMessages);
     return messages;
@@ -53,8 +53,8 @@ const page: FC<PageProps> = async ({ params }) => {
   )) as string;
   const chatPartner = JSON.parse(chatPartnerRaw) as User;
   const initialMessages = await getChatMessages(chatId);
-  console.log("chatID : ", chatId);
-  console.log("initial messages : ", initialMessages.data);
+  // console.log("chatID : ", chatId);
+  // console.log("initial messages : ", initialMessages.data);
   return (
     <div className="flex-1 justify-between flex flex-col h-full max-h-[calc(100vh-6rem)]">
       <div className="flex sm:items-center justify-between py-3 border-b-2 border-gray-200 p-2">
@@ -85,6 +85,7 @@ const page: FC<PageProps> = async ({ params }) => {
 
       {initialMessages && initialMessages.success ? (
         <Messages
+          chatId={chatId}
           initialMessages={initialMessages.data}
           sessionId={session.user.id}
           chatPartner={chatPartner}

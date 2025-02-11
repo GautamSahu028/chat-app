@@ -66,7 +66,7 @@ export const authOptions: NextAuthOptions = {
 
       try {
         await db.set(`user:${userId}`, JSON.stringify(user));
-        console.log(`User ${userId} stored in Redis`);
+        // console.log(`User ${userId} stored in Redis`);
       } catch (error) {
         console.error("Error storing user in Redis:", error);
       }

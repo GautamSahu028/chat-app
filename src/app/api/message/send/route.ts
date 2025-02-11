@@ -4,6 +4,9 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { nanoid } from "nanoid";
 import { messageValidator } from "@/lib/validations/message";
+import { pusherServer } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/utils";
+import { format } from "date-fns";
 
 export async function POST(req: Request) {
   try {
@@ -34,14 +37,25 @@ export async function POST(req: Request) {
     )) as string;
     const sender = JSON.parse(rawSender) as User;
     const timeStamp = Date.now();
+    const toBeRenderedAsTimestamp = format(Date.now(), "HH:mm").toString();
+    // console.log(
+    //   "server timeStamp : ",
+    //   typeof format(timeStamp, "HH:mm").toString()
+    // );
     const messageData: Message = {
       id: nanoid(),
       senderId: session.user.id,
       receiverId: friendId,
       text,
       timeStamp,
+      time: toBeRenderedAsTimestamp,
     };
     const message = messageValidator.safeParse(messageData);
+    pusherServer.trigger(
+      toPusherKey(`chat:${chatId}`),
+      "incoming-message",
+      message.data
+    );
     await db.zadd(`chat:${chatId}`, {
       score: timeStamp,
       member: JSON.stringify(message.data),

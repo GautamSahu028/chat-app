@@ -1,26 +1,44 @@
 "use client";
-import { cn } from "@/lib/utils";
-import React, { FC, useRef, useState } from "react";
-import { format } from "date-fns";
+import { cn, toPusherKey } from "@/lib/utils";
+import React, { FC, useEffect, useRef, useState } from "react";
+// import { format } from "date-fns";
 import Image from "next/image";
+import { pusherClient } from "@/lib/pusher";
 
 interface MessagesProps {
   initialMessages: Message[];
   sessionId: string;
   sessionImg: string | null | undefined;
   chatPartner: User;
+  chatId: string;
 }
 const Messages: FC<MessagesProps> = ({
   initialMessages,
   sessionId,
+  chatId,
   chatPartner,
   sessionImg,
 }) => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
+
+  useEffect(() => {
+    pusherClient.subscribe(toPusherKey(`chat:${chatId}`));
+    const messageHandler = (message: Message) => {
+      console.log("Received message:", message);
+      setMessages((prev) => [message, ...prev]);
+    };
+    pusherClient.bind("incoming-message", messageHandler);
+
+    return () => {
+      pusherClient.unsubscribe(toPusherKey(`chat:${chatId}`));
+      pusherClient.unbind("incoming-message", messageHandler);
+    };
+  }, [chatId]);
   const scrollDownRef = useRef<HTMLDivElement | null>(null);
-  const formatTimeStamp = (timeStamp: number) => {
-    return format(timeStamp, "HH:mm");
-  };
+  // const formatTimeStamp = (timeStamp: number) => {
+  //   return format(timeStamp, "HH:mm");
+  // };
+
   return (
     <div
       id="msgs"
@@ -55,9 +73,7 @@ const Messages: FC<MessagesProps> = ({
                   })}
                 >
                   {msg.text}{" "}
-                  <span className="ml-2 text-xs text-gray-400">
-                    {formatTimeStamp(msg.timeStamp)}
-                  </span>
+                  <span className="ml-2 text-xs text-gray-400">{msg.time}</span>
                 </span>
               </div>
 
