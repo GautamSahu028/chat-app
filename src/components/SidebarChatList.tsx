@@ -1,18 +1,69 @@
 "use client";
-import { hrefConstructor } from "@/lib/utils";
+import { chatHrefConstructor, hrefConstructor, toPusherKey } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 import React, { FC, useEffect, useState } from "react";
 import Image from "next/image";
+import { pusherClient } from "@/lib/pusher";
+import toast, { Toast } from "react-hot-toast";
+import UnseenChatToast from "./UnseenChatToast";
 
 interface SidebarChatListProps {
   friends: User[];
   sessionId: string;
 }
 
+interface ExtendedMessage {
+  data: Message;
+  senderImg: string;
+  senderName: string;
+  success: boolean;
+}
+
 const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
   const router = useRouter();
   const pathName = usePathname();
   const [unseenMsgs, setUnseenMsgs] = useState<Message[]>([]);
+
+  useEffect(() => {
+    pusherClient.subscribe(toPusherKey(`user:${sessionId}:chats`));
+    pusherClient.subscribe(toPusherKey(`user:${sessionId}:friends`));
+
+    const newFriendHandler = () => {
+      router.refresh();
+    };
+    const chatHandler = (message: ExtendedMessage) => {
+      const shouldNotify =
+        pathName !==
+        `/dashboard/chat/${chatHrefConstructor(
+          sessionId,
+          message.data.senderId
+        )}`;
+      if (!shouldNotify) return;
+      toast.custom(
+        (t: Toast) => (
+          console.log("message : ", message.data.senderId),
+          (
+            <UnseenChatToast
+              t={t}
+              sessionId={sessionId}
+              senderId={message.data.senderId}
+              senderImg={message.senderImg}
+              senderMessage={message.data.text}
+              senderName={message.senderName}
+            />
+          )
+        )
+      );
+    };
+
+    pusherClient.bind("new_message", chatHandler);
+    pusherClient.bind("new_friend", newFriendHandler);
+
+    return () => {
+      pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:chats`));
+      pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:friends`));
+    };
+  }, [pathName, sessionId, router]);
 
   useEffect(() => {
     if (pathName?.includes("chat")) {
